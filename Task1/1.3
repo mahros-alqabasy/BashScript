@@ -1,0 +1,13 @@
+#!/bin/bash
+
+
+
+# find most duplicate ips in the apache server
+
+
+log=$1 # access.log file
+n=$2
+
+
+cat $log | cut -d " " -f1 | sort | uniq -c | sort -r | head -n $n
+
