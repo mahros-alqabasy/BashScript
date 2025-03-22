@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Check if enough arguments are provided
+if [ $# -lt 2 ]; then
+    echo "Usage: $0 run <task> [parameters]"
+    exit 1
+fi
+
+# Extract command and task
+command=$1
+task=$2
+shift 2  # Shift past the first two arguments to handle additional parameters
+
+# Ensure the command is "run"
+if [ "$command" != "run" ]; then
+    echo "Error: Unsupported command '$command'"
+    echo "Usage: $0 run <task> [parameters]"
+    exit 1
+fi
+
+# Parse the task into directory and file
+dir=$(echo "$task" | cut -d'.' -f1)  # Get the directory (e.g., "1" from "1.1")
+file=$(echo "$task" | cut -d'.' -f2) # Get the file (e.g., "1" from "1.1")
+
+# Construct the script path
+script="./$dir/$file"
+
+# Check if the script exists and is executable
+if [ ! -x "$script" ]; then
+    echo "Error: Task script '$script' not found or not executable"
+    exit 1
+fi
+
+# Execute the script with additional parameters
+"$script" "$@"
