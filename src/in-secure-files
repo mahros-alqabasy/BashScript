@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# find in-secure files
+# by using <find> command with <777> permission
+
+# define styling
+TAB="    "
+STAB="  "
+
+
+# find the in-secure files
+output=$(find $1 -type f -perm 777 -print | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+count=$(echo $output | wc -l)
+
+
+
+
+if [ $# -eq 0 ]; then
+	echo "Invalid parameter count"
+	exit 1
+fi
+
+
+# check if count is zero
+if [ "$count" -eq "0" ]; then
+	echo "Directory is Secure!"
+else
+	files=""
+	for file in $output; do
+		files+="$file\n"
+	done
+
+	if [ "$files" != "" ]; then
+		echo "WARNING: Found ($count) Insecure Files"
+		echo -e $files
+	else
+		echo "Directory is Secure!"
+	fi
+fi
+
+

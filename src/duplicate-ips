@@ -1,0 +1,162 @@
+#!/bin/bash
+
+
+# Author: Mahros AL-Qabasy
+# Descri: Find most duplicate ips in access.log
+
+
+# DEFINE log funtion
+log(){
+  type=$1
+  msg=$2
+  hastab="false"
+
+
+  if [ "$3" != "" ]; then
+    hastab="$3"
+  fi
+
+  # Define color variables
+  GREEN="\e[32m"
+  RED="\e[31m"
+  BLUE="\e[34m"
+  ORANGE="\e[38;5;214m"
+
+  case ${type,,} in
+    i|info)
+      symbol="*"
+      color=$GREEN
+      ;;
+    w|warn|warning)
+      symbol="!"
+      color=$ORANGE
+      ;;
+    e|err|error)
+      symbol="-"
+      color=$RED
+      ;;
+    o|out|output)
+      symbol="?"
+      color=$BLUE
+      ;;
+    n|no|none)
+      symbol=""
+      ;;
+    *)
+      symbol="+"
+      color="\e[0m"
+      ;;
+  esac
+
+  if [ "$symbol" != "" ]; then
+      symbol="[$symbol]"
+  fi
+  
+  # Output the colored log message
+  if [ $hastab == "true" ]; then
+    echo -e "    ${color}${symbol} $msg\e[0m"
+  else
+    echo -e "${color}${symbol} $msg\e[0m"
+  fi
+}
+
+
+banner(){
+  banner="
+  ███████╗██╗███████╗██╗  ██╗██╗   ██╗    ██╗██████╗ ███████╗
+  ██╔════╝██║██╔════╝██║  ██║╚██╗ ██╔╝    ██║██╔══██╗██╔════╝
+  █████╗  ██║███████╗███████║ ╚████╔╝     ██║██████╔╝███████╗
+  ██╔══╝  ██║╚════██║██╔══██║  ╚██╔╝      ██║██╔═══╝ ╚════██║
+  ██║     ██║███████║██║  ██║   ██║       ██║██║     ███████║
+  ╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝       ╚═╝╚═╝     ╚══════╝
+  "
+  
+  # Get the width of the terminal
+  terminal_width=$(tput cols)
+
+  # Split the banner into lines and center each line
+  while IFS= read -r line; do
+      # Center each line and print it
+      printf "%*s\n" $(((${#line} + terminal_width) / 2)) "$line"
+  done <<< "$banner"
+  
+  echo
+}
+
+
+# find top-n ips
+find_top_ips(){
+  nth=$1
+
+  local ips=$(cat $access_log_path | cut -d " " -f1 | sort -g | uniq -c | sort -n -k1,1 -r | sed 's/^[ \t]*//;s/[ \t]*$//' | cut -d" " -f2 | head -n $nth)
+  local count=$(echo $ips | wc -w)
+  log w "Oh! Founded $count duplicate ips"
+
+  for ip in $ips; do
+    # echo "    + $ip"
+    log h "$ip"
+  done
+
+  log i "Success! Searching finished." 
+}
+
+
+
+main(){
+  # show banner
+  banner
+  
+  # log start
+  log i "Starting $0"
+  
+  # access.log
+  access_log_path="/var/log/apache2/access.log"
+
+  # check if access.log is EXISTS and NOT EMPTY
+  if [ ! -s "$access_log_path" ]; then
+  	log e "$access_log_path is NOT EXISTS or EMPTY!"
+  	return 1
+  fi
+
+  # copy access.log to /tmp
+  log i "Coping $access_log_path to /tmp..."
+  cp $access_log_path /tmp
+
+
+  # then find the duplicate ips
+  log i "Searching for most-duplicate-ips..."
+  find_top_ips 10
+  
+}
+
+
+# then run main
+main
+
+# end
+log i "$0 Script ended successfully"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# cat $log | cut -d " " -f1 | sort | uniq -c | sort -r | head -n $n
+
+
+
+
+
+
+
+
